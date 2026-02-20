@@ -57,7 +57,8 @@ const shadowPlaneMaterial = new THREE.ShaderMaterial({
   uniforms: {
     uShadowTexture: { value: new THREE.TextureLoader().load('/textures/displaceShadow.png') },
     uDisplacement: { value: new THREE.Vector3(0, 0, 0) },
-    uShadowContentSize: { value: new THREE.Vector2(1.0, 1.0) }
+    uShadowContentSize: { value: new THREE.Vector2(1.0, 1.0) },
+    uBlurRadius: { value: 0.02 }
   },
 
   transparent: true,
@@ -141,6 +142,12 @@ function onPointerMove(e) {
   }
 
 }
+
+/**
+ * Tweaks
+ */
+
+gui.add(shadowPlaneMaterial.uniforms.uBlurRadius, 'value').min(0).max(0.1).step(0.001).name('Blur Radius')
 
 /**
  * Renderer

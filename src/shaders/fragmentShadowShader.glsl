@@ -1,4 +1,5 @@
 uniform sampler2D uShadowTexture;
+uniform float uBlurRadius;
 
 varying vec2 vUv;
 varying float dist;
@@ -9,16 +10,28 @@ float map(float value, float min1, float max1, float min2, float max2) {
 
 void main()
 {
-  vec4 color = texture2D(uShadowTexture, vUv);
+  float r = uBlurRadius;
+  vec4 color = vec4(0.0);
+
+  color += texture2D(uShadowTexture, vUv + vec2(-r, -r));
+  color += texture2D(uShadowTexture, vUv + vec2(-r,  0.));
+  color += texture2D(uShadowTexture, vUv + vec2(-r,  r));
+  color += texture2D(uShadowTexture, vUv + vec2( 0., -r));
+  color += texture2D(uShadowTexture, vUv + vec2( 0.,  0.));
+  color += texture2D(uShadowTexture, vUv + vec2( 0.,  r));
+  color += texture2D(uShadowTexture, vUv + vec2( r, -r));
+  color += texture2D(uShadowTexture, vUv + vec2( r,  0.));
+  color += texture2D(uShadowTexture, vUv + vec2( r,  r));
+
+  color /= 9.0;
   
   float min_distance = 0.4;
+  float edgeSoftness = 0.4;
 
-  if (dist < min_distance) {
-    float alpha = map(dist, min_distance, 0., color.a , 0.);
-    color.a = clamp((alpha * 1.5), 0.0, 1.0);
-  } else {
-    color.a = 0.0;
-  }
+  float alphaMask = 1.0 - smoothstep(min_distance - edgeSoftness, min_distance, dist);
+
+  color.a *= alphaMask;
+  color.a = clamp(color.a * 1.5, 0.0, 1.0);
 
   gl_FragColor = color;
 }
