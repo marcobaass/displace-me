@@ -18,15 +18,29 @@ void main()
   vUv = uv;
   vUv = (position.xy / uContentSize) * 0.5 + 0.5;
   vec3 new_position = position;
+  float pi = 3.14159265359;
 
   float dist = length(uDisplacement - position);
   
-  float min_distance = 0.4;
+  // radius
+  float min_distance = 0.55;
 
   if (dist < min_distance) {
     float distance_mapped = map(dist, 0.0, min_distance, 1.0, 0.0);
-    float val = easeInOutCubic(distance_mapped) * 0.08; 
+    // height
+    float val = easeInOutCubic(distance_mapped) * 1.0; 
+
+    // Lift
     new_position.z += val;
+
+    // Screw
+    vec2 center = uDisplacement.xy;
+    vec2 offset = position.xy - center;
+    float angle = distance_mapped * pi * 2.0;
+    float c = cos(angle);
+    float s = sin(angle);
+
+    new_position.xy = center + vec2(offset.x * c - offset.y * s, offset.x * s + offset.y * c);
   }
 
   gl_Position = projectionMatrix * modelViewMatrix * vec4(new_position, 1.0);
