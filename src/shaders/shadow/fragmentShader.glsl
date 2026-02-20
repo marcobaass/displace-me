@@ -25,13 +25,18 @@ void main()
 
   color /= 9.0;
   
-  float min_distance = 0.4;
+  float min_distance = 0.25;
   float edgeSoftness = 0.4;
 
   float alphaMask = 1.0 - smoothstep(min_distance - edgeSoftness, min_distance, dist);
 
   color.a *= alphaMask;
   color.a = clamp(color.a * 1.5, 0.0, 1.0);
+
+  color.r = 1.0;
+  color.g = 0.5;
+  color.b = 0.0;
+
 
   gl_FragColor = color;
 }

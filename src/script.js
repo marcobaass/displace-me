@@ -1,10 +1,10 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import GUI from 'lil-gui'
-import vertexShader from './shaders/vertexShader.glsl?raw'
-import vertexShaderShadow from './shaders/vertexShadowShader.glsl?raw'
-import fragmentShader from './shaders/fragmentShader.glsl?raw'
-import fragmentShadowShader from './shaders/fragmentShadowShader.glsl?raw'
+import vertexShader from './shaders/text/vertexShader.glsl?raw'
+import vertexShaderShadow from './shaders/shadow/vertexShader.glsl?raw'
+import fragmentShader from './shaders/text/fragmentShader.glsl?raw'
+import fragmentShadowShader from './shaders/shadow/fragmentShader.glsl?raw'
 
 /**
  * Base
@@ -32,7 +32,8 @@ const planeMaterial = new THREE.ShaderMaterial({
   uniforms: {
     uTexture: { value: new THREE.TextureLoader().load('/textures/displaceFull.png') },
     uDisplacement: { value: new THREE.Vector3(0, 0, 0) },
-    uContentSize: { value: new THREE.Vector2(1.0, 1.0) }
+    uContentSize: { value: new THREE.Vector2(1.0, 1.0) },
+    uTime: { value: 0 }
   },
 
   transparent: true,
@@ -172,6 +173,9 @@ const tick = () =>
 
     // Update controls
     controls.update()
+
+    // update time
+    planeMaterial.uniforms.uTime.value = elapsedTime;
 
     // Render
     renderer.render(scene, camera)
