@@ -1,6 +1,10 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import GUI from 'lil-gui'
+import vertexShader from './shaders/vertexShader.glsl?raw'
+import vertexShaderShadow from './shaders/vertexShadowShader.glsl?raw'
+import fragmentShader from './shaders/fragmentShader.glsl?raw'
+import fragmentShadowShader from './shaders/fragmentShadowShader.glsl?raw'
 
 /**
  * Base
@@ -15,22 +19,64 @@ const canvas = document.querySelector('canvas.webgl')
 const scene = new THREE.Scene()
 
 /**
- * Textures
+ * Geometry and Material
  */
-const textureLoader = new THREE.TextureLoader()
+// Plane
+const planeGeometry = new THREE.PlaneGeometry(10, 10, 100, 100)
 
-/**
- * Test mesh
- */
-// Geometry
-const geometry = new THREE.BoxGeometry(1, 1)
+// PlaneMaterial
+const planeMaterial = new THREE.ShaderMaterial({
+  vertexShader,
+  fragmentShader,
 
-// Material
-const material = new THREE.MeshBasicMaterial()
+  uniforms: {
+    uTexture: { value: new THREE.TextureLoader().load('/textures/displaceFull.png') },
+    uDisplacement: { value: new THREE.Vector3(0, 0, 0) },
+    uContentSize: { value: new THREE.Vector2(1.0, 1.0) }
+  },
 
-// Mesh
-const mesh = new THREE.Mesh(geometry, material)
-scene.add(mesh)
+  transparent: true,
+  depthWrite: false,
+  side: THREE.DoubleSide
+
+})
+
+const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial)
+
+planeMesh.rotation.z = Math.PI / 4
+
+scene.add(planeMesh)
+
+// Shadow Plane
+const shadowPlaneGeometry = new THREE.PlaneGeometry(10, 10, 100, 100)
+
+const shadowPlaneMaterial = new THREE.ShaderMaterial({
+  vertexShader: vertexShaderShadow,
+  fragmentShader: fragmentShadowShader,
+
+  uniforms: {
+    uShadowTexture: { value: new THREE.TextureLoader().load('/textures/displaceShadow.png') },
+    uDisplacement: { value: new THREE.Vector3(0, 0, 0) },
+    uShadowContentSize: { value: new THREE.Vector2(1.0, 1.0) }
+  },
+
+  transparent: true,
+  side: THREE.DoubleSide
+
+})
+
+const shadowPlaneMesh = new THREE.Mesh(shadowPlaneGeometry, shadowPlaneMaterial)
+
+shadowPlaneMaterial.depthWrite = false;
+shadowPlaneMesh.rotation.z = Math.PI / 4
+
+scene.add(shadowPlaneMesh)
+
+// Sphere
+const sphereGeometry = new THREE.SphereGeometry(0.02, 16, 16)
+const sphereMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00})
+const sphereMesh = new THREE.Mesh(sphereGeometry, sphereMaterial)
+scene.add(sphereMesh)
 
 /**
  * Sizes
@@ -59,8 +105,10 @@ window.addEventListener('resize', () =>
  * Camera
  */
 // Base camera
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
-camera.position.set(0.25, - 0.25, 1)
+const aspectRatio = sizes.width / sizes.height
+const camera = new THREE.OrthographicCamera(-aspectRatio, aspectRatio, 1, -1, 0.1, 100)
+camera.position.set(-0, -10, 5)
+camera.lookAt(0,0,0)
 scene.add(camera)
 
 // Controls
@@ -68,13 +116,43 @@ const controls = new OrbitControls(camera, canvas)
 controls.enableDamping = true
 
 /**
+ * Raycaster
+ */
+
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+
+window.addEventListener('pointermove', onPointerMove)
+
+function onPointerMove(e) {  
+  pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+  pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(pointer, camera);
+  const intersects = raycaster.intersectObject(planeMesh);
+
+  if (intersects.length > 0) {
+    sphereMesh.position.copy(intersects[0].point);
+
+    const localPoint = planeMesh.worldToLocal(intersects[0].point.clone());
+    
+    planeMaterial.uniforms.uDisplacement.value.copy(localPoint);
+    shadowPlaneMaterial.uniforms.uDisplacement.value.copy(localPoint);
+  }
+
+}
+
+/**
  * Renderer
  */
 const renderer = new THREE.WebGLRenderer({
-    canvas: canvas
+    canvas: canvas,
+    antialias: true
 })
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+
+renderer.setClearColor(0xffffff, 1)
 
 /**
  * Animate
