@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import GUI from 'lil-gui'
 import vertexShader from './shaders/text/vertexShader.glsl?raw'
 import vertexShaderShadow from './shaders/shadow/vertexShader.glsl?raw'
@@ -75,10 +75,10 @@ shadowPlaneMesh.rotation.z = Math.PI / 4
 scene.add(shadowPlaneMesh)
 
 // Sphere
-const sphereGeometry = new THREE.SphereGeometry(0.02, 16, 16)
-const sphereMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00})
-const sphereMesh = new THREE.Mesh(sphereGeometry, sphereMaterial)
-scene.add(sphereMesh)
+// const sphereGeometry = new THREE.SphereGeometry(0.02, 16, 16)
+// const sphereMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00})
+// const sphereMesh = new THREE.Mesh(sphereGeometry, sphereMaterial)
+// scene.add(sphereMesh)
 
 /**
  * Sizes
@@ -99,8 +99,8 @@ camera.lookAt(0,0,0)
 scene.add(camera)
 
 // Controls
-const controls = new OrbitControls(camera, canvas)
-controls.enableDamping = true
+//  const controls = new OrbitControls(camera, canvas)
+//  controls.enableDamping = true
 
 /**
  * Raycaster
@@ -119,7 +119,7 @@ function onPointerMove(e) {
   const intersects = raycaster.intersectObject(planeMesh);
 
   if (intersects.length > 0) {
-    sphereMesh.position.copy(intersects[0].point);
+    // sphereMesh.position.copy(intersects[0].point);
 
     const localPoint = planeMesh.worldToLocal(intersects[0].point.clone());
     
@@ -187,7 +187,7 @@ const tick = () =>
     const elapsedTime = clock.getElapsedTime()
 
     // Update controls
-    controls.update()
+    // controls.update()
 
     // update time
     planeMaterial.uniforms.uTime.value = elapsedTime;
