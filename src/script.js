@@ -88,21 +88,6 @@ const sizes = {
     height: window.innerHeight
 }
 
-window.addEventListener('resize', () =>
-{
-    // Update sizes
-    sizes.width = window.innerWidth
-    sizes.height = window.innerHeight
-
-    // Update camera
-    camera.aspect = sizes.width / sizes.height
-    camera.updateProjectionMatrix()
-
-    // Update renderer
-    renderer.setSize(sizes.width, sizes.height)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-})
-
 /**
  * Camera
  */
@@ -161,6 +146,36 @@ renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
 renderer.setClearColor(0xffffff, 1)
+
+/**
+ * Handle resize
+ */
+function handleResize() {
+  sizes.width = window.innerWidth
+  sizes.height = window.innerHeight
+  const aspect = sizes.width / sizes.height
+  const isPortrait = aspect < 1
+  const viewHeight = 2
+  const viewWidth = 2.5
+  if (!isPortrait) {
+    camera.left = -0.5 * viewHeight * aspect
+    camera.right =  0.5 * viewHeight * aspect
+    camera.top =    0.5 * viewHeight
+    camera.bottom = -0.5 * viewHeight
+  } else {
+    camera.left = -0.5 * viewWidth * aspect * (2.0 - aspect)
+    camera.right =  0.5 * viewWidth * aspect * (2.0 - aspect)
+    camera.top =    0.5 * viewWidth * (2.0 - aspect)
+    camera.bottom = -0.5 * viewWidth * (2.0 - aspect)
+  }
+  
+  camera.updateProjectionMatrix()
+  renderer.setSize(sizes.width, sizes.height)
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+}
+
+window.addEventListener('resize', handleResize)
+handleResize()
 
 /**
  * Animate

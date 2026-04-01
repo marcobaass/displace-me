@@ -17,3 +17,11 @@ body
     left: 0;
     outline: none;
 }
+
+.lil-gui {
+    display: none !important;
+  }
+
+canvas.webgl {
+    touch-action: none;
+}
